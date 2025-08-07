@@ -1,2 +1,2 @@
 -- CYA UI Script Inicial
-loadstring(game:HttpGet("https://raw.githubusercontent.com/PHGS971/CYAUI/main/src/init.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/PHGS971/CYA-UI/refs/heads/main/src/init.lua"))()
