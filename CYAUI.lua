@@ -30,7 +30,6 @@ function CYAUI:PlayIntro(callback)
 
     transition.Visible = true
 
-    -- Tween de slide e fade
     TweenService:Create(transition, TweenInfo.new(0.5), {
         Position = UDim2.new(0, 0, 0, 0),
         BackgroundTransparency = 0.1
@@ -48,31 +47,10 @@ function CYAUI:PlayIntro(callback)
     end)
 end
 
--- Função para criar a janela principal
+-- Criar a janela principal
 function CYAUI:CreateWindow(config)
     local WindowModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/PHGS971/CYA-UI/main/Library/Window.lua"))()
     return WindowModule:Init(config)
 end
 
 return CYAUI
-
-local CYA = loadstring(game:HttpGet("https://raw.githubusercontent.com/PHGS971/CYA-UI/main/CYAUI.lua"))()
-
-CYA:PlayIntro(function()
-    local Window = CYA:CreateWindow({
-        Title = "Meu Hub",
-        Icon = "rbxassetid://10723423456",
-        Author = "MeuNome",
-        Size = UDim2.fromOffset(580, 300),
-        Theme = "Dark"
-    })
-
-    local Tab1 = Window:CreateTab("Principal")
-    local Tab2 = Window:CreateTab("Configurações")
-
-    -- Exemplo de conteúdo
-    local Elements = loadstring(game:HttpGet("https://raw.githubusercontent.com/PHGS971/CYA-UI/main/Library/Elements.lua"))()
-    Elements:CreateButton(Tab1, "Executar Script", function()
-        print("Executando...")
-    end)
-end)
