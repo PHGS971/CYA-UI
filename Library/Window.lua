@@ -1,121 +1,132 @@
-local CYAUI = {}
-CYAUI.__index = CYAUI
+local Window = {}
+Window.__index = Window
 
--- Helper para copiar tabela (simples)
-local function shallowCopy(tbl)
-    local t = {}
-    for k,v in pairs(tbl) do t[k] = v end
-    return t
-end
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
 
--- Função para criar janela principal (construtor)
-function CreateWindow(params)
-    local self = setmetatable({}, CYAUI)
-    self.name = params.name or "CYAUI Hub"
-    self.author = params.author or "By PHGS"
-    self.color = params.Color or "Dark"
-    self.configFolder = params.ConfigFolder or "config"
-    self.tabs = {}
-    self.visible = true
-    self.x, self.y = 100, 100
-    self.width, self.height = 500, 400
-    self.dragging = false
-    self.dragOffsetX, self.dragOffsetY = 0, 0
+-- Função para criar a janela principal
+function Window:Init(config)
+    local self = setmetatable({}, Window)
+
+    -- Criar ScreenGui
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "CYA_UI_Main"
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    ScreenGui.IgnoreGuiInset = true
+    ScreenGui.ResetOnSpawn = false
+
+    -- Frame principal
+    local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 300, 0, 200) -- tamanho fixo
+frame.Position = UDim2.new(0.5, 0, 0.5, 0) -- posição central
+frame.AnchorPoint = Vector2.new(0.5, 0.5) -- ancora no centro
+frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+frame.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+    -- Cantos arredondados
+    local UICorner = Instance.new("UICorner", MainFrame)
+    UICorner.CornerRadius = UDim.new(0, 8)
+
+    -- Cabeçalho
+    local Header = Instance.new("Frame", MainFrame)
+    Header.Size = UDim2.new(1, 0, 0, 40)
+    Header.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    Header.BorderSizePixel = 0
+
+    local UIStroke = Instance.new("UIStroke", Header)
+    UIStroke.Color = Color3.fromRGB(60, 60, 60)
+    UIStroke.Thickness = 1
+
+    local Title = Instance.new("TextLabel", Header)
+    Title.Size = UDim2.new(1, -40, 1, 0)
+    Title.Position = UDim2.new(0, 40, 0, 0)
+    Title.BackgroundTransparency = 1
+    Title.Text = (config.Title or "CYA Hub") .. " | " .. (config.Author or "Desconhecido")
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 18
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+
+    -- Ícone no cabeçalho
+    local Icon = Instance.new("ImageLabel", Header)
+    Icon.Size = UDim2.new(0, 24, 0, 24)
+    Icon.Position = UDim2.new(0, 8, 0.5, -12)
+    Icon.BackgroundTransparency = 1
+    Icon.Image = config.Icon or "rbxassetid://10723423456"
+
+    -- Container lateral para Tabs
+    local TabsContainer = Instance.new("ScrollingFrame", MainFrame)
+    TabsContainer.Size = UDim2.new(0, 150, 1, -40)
+    TabsContainer.Position = UDim2.new(0, 0, 0, 40)
+    TabsContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    TabsContainer.ScrollBarThickness = 4
+    TabsContainer.BorderSizePixel = 0
+    TabsContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+    local TabsLayout = Instance.new("UIListLayout", TabsContainer)
+    TabsLayout.Padding = UDim.new(0, 4)
+    TabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    -- Área de conteúdo
+    local ContentFrame = Instance.new("Frame", MainFrame)
+    ContentFrame.Size = UDim2.new(1, -150, 1, -40)
+    ContentFrame.Position = UDim2.new(0, 150, 0, 40)
+    ContentFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    ContentFrame.BorderSizePixel = 0
+
+    local ContentCorner = Instance.new("UICorner", ContentFrame)
+    ContentCorner.CornerRadius = UDim.new(0, 6)
+
+    -- Lista de abas
+    self.Tabs = {}
+    self.ContentFrame = ContentFrame
+    self.TabsContainer = TabsContainer
 
     return self
 end
 
--- Método para criar abas (Tabs)
-function CYAUI:Tab_Home(params)
-    local tab = {
-        title = params.createtab or "Tab",
-        icon = params.icon or "default",
-        dropdowns = {},
-        buttons = {},
-        inputs = {},
-        selections = {},
-    }
-    table.insert(self.tabs, tab)
-    return tab
-end
+-- Criar nova Tab
+function Window:CreateTab(name)
+    local TabButton = Instance.new("TextButton", self.TabsContainer)
+    TabButton.Size = UDim2.new(1, -8, 0, 30)
+    TabButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    TabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TabButton.Font = Enum.Font.Gotham
+    TabButton.TextSize = 14
+    TabButton.Text = name
+    TabButton.AutoButtonColor = false
 
--- Método para criar dropdown dentro de uma aba
-function CYAUI:createDropdown(tab, params, onChange)
-    local dropdown = {
-        title = params.title or "Dropdown",
-        options = {},
-        selected = nil,
-        onChange = onChange,
-    }
+    local BtnCorner = Instance.new("UICorner", TabButton)
+    BtnCorner.CornerRadius = UDim.new(0, 4)
 
-    -- Parse opções (se string separada por vírgula ou espaço)
-    if type(params.options) == "string" then
-        dropdown.options = {}
-        for option in params.options:gmatch("[^, ]+") do
-            table.insert(dropdown.options, option)
+    -- Frame de conteúdo para esta aba
+    local TabContent = Instance.new("ScrollingFrame", self.ContentFrame)
+    TabContent.Size = UDim2.new(1, 0, 1, 0)
+    TabContent.BackgroundTransparency = 1
+    TabContent.BorderSizePixel = 0
+    TabContent.Visible = false
+    TabContent.ScrollBarThickness = 6
+    TabContent.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+    local Layout = Instance.new("UIListLayout", TabContent)
+    Layout.Padding = UDim.new(0, 6)
+    Layout.SortOrder = Enum.SortOrder.LayoutOrder
+
+    -- Quando clicar na Tab
+    TabButton.MouseButton1Click:Connect(function()
+        for _, tab in pairs(self.Tabs) do
+            tab.Content.Visible = false
         end
-    elseif type(params.options) == "table" then
-        dropdown.options = shallowCopy(params.options)
-    end
+        TabContent.Visible = true
+    end)
 
-    dropdown.selected = dropdown.options[1]
+    table.insert(self.Tabs, {Button = TabButton, Content = TabContent})
 
-    table.insert(tab.dropdowns, dropdown)
-    return dropdown
+    -- Ajustar CanvasSize
+    self.TabsContainer.CanvasSize = UDim2.new(0, 0, 0, #self.Tabs * 34)
+
+    return TabContent
 end
 
--- Método para criar botão dentro de uma aba
-function CYAUI:createButton(tab, params, onClick)
-    local button = {
-        title = params.title or "Button",
-        onClick = onClick,
-    }
-    table.insert(tab.buttons, button)
-    return button
-end
-
--- Método para criar input dentro de uma aba
-function CYAUI:createInput(tab, params, onChange)
-    local input = {
-        placeholder = params.placeholder or "",
-        text = "",
-        onChange = onChange,
-    }
-    table.insert(tab.inputs, input)
-    return input
-end
-
--- Método para criar seleção (checkbox ou radio) dentro de uma aba
-function CYAUI:createSelection(tab, params, onToggle)
-    local selection = {
-        title = params.title or "Selection",
-        checked = false,
-        onToggle = onToggle,
-    }
-    table.insert(tab.selections, selection)
-    return selection
-end
-
--- (Opcional) função para desenhar (a adaptar para seu sistema gráfico)
-function CYAUI:draw()
-    print("=== Janela: " .. self.name .. " | Autor: " .. self.author)
-    print("Visível? " .. tostring(self.visible))
-    print("Tabs:")
-    for i, tab in ipairs(self.tabs) do
-        print(string.format(" Tab %d: %s (Icon: %s)", i, tab.title, tab.icon))
-        for _, dropdown in ipairs(tab.dropdowns) do
-            print("  Dropdown: " .. dropdown.title .. " | Selecionado: " .. tostring(dropdown.selected))
-        end
-        for _, button in ipairs(tab.buttons) do
-            print("  Button: " .. button.title)
-        end
-        for _, input in ipairs(tab.inputs) do
-            print("  Input: " .. input.placeholder .. " | Texto: " .. input.text)
-        end
-        for _, selection in ipairs(tab.selections) do
-            print("  Selection: " .. selection.title .. " | Checked: " .. tostring(selection.checked))
-        end
-    end
-end
-
-return CreateWindow
+return Window
